@@ -5,17 +5,19 @@ use crate::LayerType;
 use rand::Rng;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
+use std::any::Any;
+use serde_json;
+use ndarray::{Array2, Array4};
 
 pub struct Dense {
-    weights: Array2<f64>,
-    biases: Array1<f64>,
+    pub weights: Array2<f64>,
+    pub biases: Array1<f64>,
     grad_weights: Array2<f64>,
     grad_biases: Array1<f64>,
 }
 
 impl Dense {
     pub fn new(input_size: usize, output_size: usize) -> Self {
-        // 初始化权重
         let scale = (2.0 / (input_size + output_size) as f64).sqrt();
         let mut rng = rand::thread_rng();
         let weights = Array2::from_shape_fn((input_size, output_size), |_| {
@@ -32,14 +34,23 @@ impl Dense {
         }
     }
 
+    pub fn as_any(&self) -> &dyn Any {
+        self
+    }
+
     pub fn forward(&self, input: Array4<f64>) -> Array4<f64> {
         // 将输入展平成2D数组
         let (batch_size, _channels, _height, _width) = input.dim();
         let input_use = input.into_shape((batch_size, self.weights.nrows())).unwrap();
 
         // 矩阵乘法
-        let mut output_use = parallel_matrix_multiplication(&input_use, &self.weights) + &self.biases;
-
+        let mut output_use = parallel_matrix_multiplication(&input_use, &self.weights);
+        output_use.axis_iter_mut(Axis(0))
+        .into_par_iter()
+        .zip(self.biases.axis_iter(Axis(0)))
+        .for_each(|(mut a,b)| {
+            a +=&b;
+        });
         // 将输出重新转换为4D数组
         output_use.into_shape((batch_size, 1, 1, self.weights.ncols())).unwrap()
     }
@@ -123,6 +134,14 @@ impl Dense {
         self.grad_weights.fill(0.0);
         self.grad_biases.fill(0.0);
     }
+
+    pub fn set_weights(&mut self, weights: Array2<f64>) {
+        self.weights = weights;
+    }
+
+    pub fn set_biases(&mut self, biases: Array1<f64>) {
+        self.biases = biases;
+    }
 }
 
 impl Layer for Dense {
@@ -140,6 +159,10 @@ impl Layer for Dense {
 
     fn layer_type(&self) -> LayerType {
         LayerType::Dense
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

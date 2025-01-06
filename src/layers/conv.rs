@@ -4,6 +4,9 @@ use crate::Layer;
 use crate::LayerType;
 use rand::Rng;
 use crate::Activation;
+use std::any::Any;
+use serde_json;
+
 pub enum Initializer {
     He,
     Xavier,
@@ -12,13 +15,13 @@ pub enum Initializer {
 }
 
 pub struct Conv2D {
-    in_channels: usize,
-    out_channels: usize,
-    kernel_size: usize,
-    stride: usize,
-    padding: usize,
-    weights: Array4<f64>,
-    biases: Array1<f64>,
+    pub in_channels: usize,
+    pub out_channels: usize,
+    pub kernel_size: usize,
+    pub stride: usize,
+    pub padding: usize,
+    pub weights: Array4<f64>,
+    pub biases: Array1<f64>,
 }
 
 impl Conv2D {
@@ -34,6 +37,34 @@ impl Conv2D {
             weights,
             biases,
         }
+    }
+
+    pub fn out_channels(&self) -> usize {
+        self.out_channels
+    }
+
+    pub fn in_channels(&self) -> usize {
+        self.in_channels
+    }
+
+    pub fn kernel_size(&self) -> usize {
+        self.kernel_size
+    }
+
+    pub fn stride(&self) -> usize {
+        self.stride
+    }
+
+    pub fn padding(&self) -> usize {
+        self.padding
+    }
+
+    pub fn set_weights(&mut self, weights: Array4<f64>) {
+        self.weights = weights;
+    }
+
+    pub fn set_biases(&mut self, biases: Array1<f64>) {
+        self.biases = biases;
     }
 
     fn initialize_weights(in_channels: usize, out_channels: usize, kernel_size: usize, initializer: Initializer) -> Array4<f64> {
@@ -147,5 +178,9 @@ impl Layer for Conv2D {
 
     fn layer_type(&self) -> LayerType {
         LayerType::Conv2D
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

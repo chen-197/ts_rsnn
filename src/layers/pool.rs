@@ -1,16 +1,23 @@
-use ndarray::{Array4, Axis, s};
+use ndarray::{Array2, Array4, Axis, s};
 use rayon::prelude::*;
 use crate::layers::Layer;
 use crate::LayerType;
 use crate::Activation;
+use std::any::Any;
+use serde_json;
+
 pub struct MaxPool2D {
-    pool_size: usize,
-    stride: usize,
+    pub pool_size: usize,
+    pub stride: usize,
 }
 
 impl MaxPool2D {
     pub fn new(pool_size: usize, stride: usize) -> Self {
         MaxPool2D { pool_size, stride }
+    }
+
+    pub fn as_any(&self) -> &dyn Any {
+        self
     }
 
     pub fn forward(&self, input: Array4<f64>) -> Array4<f64> {
@@ -59,5 +66,9 @@ impl Layer for MaxPool2D {
 
     fn layer_type(&self) -> LayerType {
         LayerType::MaxPool2D
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
