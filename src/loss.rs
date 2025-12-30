@@ -1,5 +1,4 @@
 use ndarray::prelude::*;
-
 use rayon::prelude::*;
 
 pub trait Loss: Send + Sync {
@@ -11,26 +10,21 @@ pub struct MeanSquaredError;
 
 impl Loss for MeanSquaredError {
     fn compute(&self, predicted: &Array2<f64>, actual: &Array2<f64>) -> f64 {
-        predicted
-            .as_slice()
-            .unwrap()
-            .par_iter()
+        let sum_sq_error: f64 = predicted.as_slice().unwrap().par_iter()
             .zip(actual.as_slice().unwrap().par_iter())
             .map(|(p, a)| (p - a).powi(2))
-            .sum::<f64>()
-            / predicted.len() as f64
+            .sum();
+        sum_sq_error / predicted.len() as f64
     }
 
     fn gradient(&self, predicted: &Array2<f64>, actual: &Array2<f64>) -> Array2<f64> {
-        let grad: Vec<f64> = predicted
-            .as_slice()
-            .unwrap()
-            .par_iter()
+        let n = predicted.len() as f64;
+        let mut grad = Array2::zeros(predicted.raw_dim());
+        grad.as_slice_mut().unwrap().par_iter_mut()
+            .zip(predicted.as_slice().unwrap().par_iter())
             .zip(actual.as_slice().unwrap().par_iter())
-            .map(|(p, a)| 2.0 * (p - a) / predicted.len() as f64)
-            .collect();
-
-        Array2::from_shape_vec(predicted.raw_dim(), grad).unwrap()
+            .for_each(|((g, p), a)| { *g = 2.0 * (p - a) / n; });
+        grad
     }
 }
 
@@ -38,29 +32,27 @@ pub struct CrossEntropy;
 
 impl Loss for CrossEntropy {
     fn compute(&self, predicted: &Array2<f64>, actual: &Array2<f64>) -> f64 {
-        predicted
-            .as_slice()
-            .unwrap()
-            .par_iter()
+        let sum_error: f64 = predicted.as_slice().unwrap().par_iter()
             .zip(actual.as_slice().unwrap().par_iter())
             .map(|(p, a)| {
-                -a * p.ln() - (1.0 - a) * (1.0 - p).ln()
+                let eps = 1e-15;
+                let p_safe = p.clamp(eps, 1.0 - eps);
+                -a * p_safe.ln() - (1.0 - a) * (1.0 - p_safe).ln()
             })
-            .sum::<f64>()
-            / predicted.len() as f64
+            .sum();
+        sum_error / predicted.len() as f64
     }
 
     fn gradient(&self, predicted: &Array2<f64>, actual: &Array2<f64>) -> Array2<f64> {
-        let grad: Vec<f64> = predicted
-            .as_slice()
-            .unwrap()
-            .par_iter()
+        let mut grad = Array2::zeros(predicted.raw_dim());
+        grad.as_slice_mut().unwrap().par_iter_mut()
+            .zip(predicted.as_slice().unwrap().par_iter())
             .zip(actual.as_slice().unwrap().par_iter())
-            .map(|(p, a)| {
-                (p - a) / (p * (1.0 - p)).max(1e-7)
-            })
-            .collect();
-
-        Array2::from_shape_vec(predicted.raw_dim(), grad).unwrap()
+            .for_each(|((g, p), a)| {
+                let eps = 1e-15;
+                let denominator = (p * (1.0 - p)).max(eps);
+                *g = (p - a) / denominator;
+            });
+        grad
     }
 }
