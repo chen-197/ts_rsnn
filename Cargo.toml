@@ -3,12 +3,17 @@ name = "rust_nn"
 version = "0.1.0"
 edition = "2021"
 [dependencies]
-ndarray = { version = "0.16.0", features = ["rayon","matrixmultiply-threading"] }
-rayon = "1.10.0"
-rand = "0.8.5"
-#ndarray-rand = "0.14.0"
-#ndarray-parallel = "0.9.0"
-#rand_distr = "0.4.3"
-image = "0.23"
+ndarray = { version = "0.15", features = ["rayon"] }
+rand = "0.8"
+rayon = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+image = "0.24" 
+mnist = "0.5" 
+
+[profile.release]
+opt-level = 3       # 最高优化等级
+lto = true          # 开启链接时优化
+codegen-units = 1   # 降低并行编译单元
+panic = "abort"     # 发生 panic 直接终止
+strip = true        # 去除符号表
