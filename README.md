@@ -23,7 +23,7 @@ rust_nn 是一个从零开始编写的、轻量级且高性能的神经网络库
 [dependencies]
 ndarray = "0.15"  # 必须引入 ndarray 用于数据构造
 # 方式一：通过 Git 引入 (推荐)
-rust_nn = { git = "https://github.com/chen-197/ts_rsnn.git", branch = "master" }
+rust_nn = { git = "", branch = "" }
 
 # 方式二：本地路径引入 (开发调试用)
 # rust_nn = { path = "../rust_nn" }
