@@ -14,10 +14,13 @@ rust_nn 是一个从零开始编写的、轻量级且高性能的神经网络库
    * 支持 ReLU、Sigmoid 等激活函数。
    * 支持 CrossEntropy（交叉熵）和 MSE（均方误差）损失函数。
  * 模型持久化：支持将训练好的模型保存为 JSON 文件，并随时加载进行推理。
- * 零依赖推理：推理阶段仅需标准库支持，极易集成到其他 Rust 应用中。
+
 📦 如何在其他项目中引入
+
 你可以通过 Cargo 直接引入此项目作为依赖。
+
 1. 添加依赖
+
 在你的新项目 Cargo.toml 中添加：
 ```toml
 [dependencies]
@@ -30,6 +33,7 @@ rust_nn = { git = "", branch = "" }
 ```
 
 2. ⚠️ 关键性能配置 (必读)
+
 为了获得预期的性能，考虑在你的项目 Cargo.toml 中添加以下编译优化配置：
 ```toml
 [profile.release]
@@ -41,7 +45,9 @@ panic = "abort"     # 发生错误直接退出
 ```
 
 🚀 快速开始
+
 准备工作：MNIST 数据集
+
 本项目包含一个内置的 MNIST 训练示例。在运行之前，请确保项目根目录下存在 data 文件夹，并包含以下 未压缩 的数据集文件（注意文件名必须完全一致，无 .gz 后缀）：
 ```
 /data
@@ -58,6 +64,7 @@ cargo run --release
 ```
 
 📚 API 使用指南
+
 1. 构建网络
 ```rust
 use rust_nn::network::Network;
