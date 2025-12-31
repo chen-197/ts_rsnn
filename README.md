@@ -43,11 +43,13 @@ panic = "abort"     # 发生错误直接退出
 🚀 快速开始
 准备工作：MNIST 数据集
 本项目包含一个内置的 MNIST 训练示例。在运行之前，请确保项目根目录下存在 data 文件夹，并包含以下 未压缩 的数据集文件（注意文件名必须完全一致，无 .gz 后缀）：
+```
 /data
   ├── train-images-idx3-ubyte
   ├── train-labels-idx1-ubyte
   ├── t10k-images-idx3-ubyte
   └── t10k-labels-idx1-ubyte
+```
 
 运行训练示例
 我们提供了一个完整的训练脚本 src/main.rs，它会训练一个 CNN 网络，并展示结果。
